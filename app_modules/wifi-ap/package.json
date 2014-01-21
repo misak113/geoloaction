@@ -1,0 +1,20 @@
+{
+  "name": "wifi-ap",
+  "version": "0.0.1",
+  "description": "",
+  "main": "LogLoader.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "mysql": "~2.0.1",
+    "underscore": "~1.5.2",
+    "vows": "~0.7.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "misak113",
+  "license": "BSD"
+}
