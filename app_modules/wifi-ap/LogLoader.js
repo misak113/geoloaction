@@ -12,8 +12,8 @@ var builder = require('./mysql/builder');
  * @param {Connection} connection MySQL connection
  * @return {LogLoader}
  */
-exports = module.exports = function (connection) {
-	return new LogLoader(connection);
+exports = module.exports = function (connection, table) {
+	return new LogLoader(connection, table);
 };
 
 /**
@@ -38,19 +38,17 @@ LogLoader.prototype = Object.create(EventEmitter.prototype);
 LogLoader.prototype.loadFileToStorage = function (filePath, callback) {
 	var self = this;
 	var fileReadable = fs.createReadStream(filePath);
-	var fileReadline = readline.createInstance({
-		input: fileReadable
-	});
-	fileReadline.on('line', function (line) {
+	fileReadable.on('line', function (line) {
 		self.parseLine(line, self.addLine);
 	});
-	fileReadline.on('close', function () {
+	fileReadable.on('end', function () {
 		self.storeRowsBuffer(function () {
 			self.emit('end');
 			if (_.isFunction(callback))
 				callback();
 		});
 	});
+	fileReadable.read(100);
 };
 
 /**
@@ -60,7 +58,7 @@ LogLoader.prototype.loadFileToStorage = function (filePath, callback) {
  * @return {[type]}
  */
 LogLoader.prototype.parseLine = function (line, callback) {
-	
+
 };
 
 
