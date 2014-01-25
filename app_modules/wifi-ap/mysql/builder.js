@@ -3,7 +3,7 @@ var _ = require('underscore');
 var mysql = require('mysql');
 
 
-var INSERT_OR_UPDATE_TEMPLATE = 'INSERT INTO :table (:keys) VALUES (:values) ON DUPLICATE KEY UPDATE :updates';
+var INSERT_OR_UPDATE_TEMPLATE = 'INSERT INTO :table (:keys) VALUES :values ON DUPLICATE KEY UPDATE :updates';
 
 
 /**
@@ -32,9 +32,11 @@ var insertOrUpdate = function (table, data) {
     var values = [];
     // fill empty values
     data.forEach(function (row) {
+        rowValues = [];
         keys.forEach(function (key) {
-            values.push(typeof row[key] !== 'undefined' ?row[key] :null);
+            rowValues.push(typeof row[key] !== 'undefined' ?row[key] :null);
         });
+        values.push(rowValues);
     });
 
     // build query
@@ -55,9 +57,13 @@ var insertOrUpdate = function (table, data) {
 
     // values
     var sqlValues = [];
-    values.forEach(function (value) {
-        sqlValues.push('?');
-        inserts.push(value);
+    values.forEach(function (rowValues) {
+        var sqlRowValues = [];
+        rowValues.forEach(function (value) {
+            sqlRowValues.push('?');
+            inserts.push(value);
+        });
+        sqlValues.push('('+sqlRowValues.join(', ')+')')
     });
     sql = sql.replace(':values', sqlValues.join(', '));
 

@@ -1,9 +1,11 @@
 
 var readline = require('readline');
 var fs = require('fs');
+var stream = require('stream');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('underscore');
 var builder = require('./mysql/builder');
+var moment = require('moment');
 
 
 
@@ -26,9 +28,12 @@ var LogLoader = function (connection, table) {
 	this.connection = connection;
 	this.table = table;
 	this.rowsBuffer = [];
-	this.maxBufferSize = 20;
+	this.maxBufferSize = 10000;
 };
 LogLoader.prototype = Object.create(EventEmitter.prototype);
+LogLoader.prototype.TYPE_CONNECTED = 'connected';
+LogLoader.prototype.TYPE_DISCONNECTED = 'disconnected';
+LogLoader.prototype.TYPE_UNKNOWN = 'unknown';
 
 /**
  * Load Wifi AP log from file to MySQL
@@ -38,17 +43,30 @@ LogLoader.prototype = Object.create(EventEmitter.prototype);
 LogLoader.prototype.loadFileToStorage = function (filePath, callback) {
 	var self = this;
 	var fileReadable = fs.createReadStream(filePath);
-	fileReadable.on('line', function (line) {
-		self.parseLine(line, self.addLine);
+	var outStream = new stream;
+	outStream.readable = true;
+	outStream.writable = true;
+
+	var fileReadline = readline.createInterface({
+		input: fileReadable,
+		output: outStream,
+		terminal: false
 	});
-	fileReadable.on('end', function () {
+
+	fileReadline.on('line', function (line) {
+		self.parseLine(line, function (row) {
+			self.addLine(row);
+		});
+	});
+	fileReadline.on('end', function () {
 		self.storeRowsBuffer(function () {
 			self.emit('end');
 			if (_.isFunction(callback))
 				callback();
 		});
 	});
-	fileReadable.read(100);
+
+	return this;
 };
 
 /**
@@ -58,12 +76,31 @@ LogLoader.prototype.loadFileToStorage = function (filePath, callback) {
  * @return {[type]}
  */
 LogLoader.prototype.parseLine = function (line, callback) {
+	var parts = line.split(' ');
+	var row = {
+		date_access: moment(parts[0]).format('YYYY-MM-DD hh:mm:ss'),
+		role: parts[1],
+		mac_hash: parts[2],
+		type: this.mapType(parts[3]),
+		ap_code: typeof parts[8] !== 'undefined' ?parts[8].replace('.', '') :null
+	};
+	callback(row);
+};
 
+LogLoader.prototype.mapType = function (type) {
+	switch (type) {
+		case 'successfully':
+			return this.TYPE_CONNECTED;
+		case 'discconected':
+			return this.TYPE_DISCONNECTED;
+		default:
+			return this.TYPE_UNKNOWN;
+	}
 };
 
 
 LogLoader.prototype.addLine = function (parsedLine) {
-	this.rows.push(parsedLine);
+	this.rowsBuffer.push(parsedLine);
 	if (this.rowsBuffer.length >= this.maxBufferSize) {
 		this.storeRowsBuffer();
 	}
@@ -75,7 +112,11 @@ LogLoader.prototype.storeRowsBuffer = function (callback) {
 	this.clearArray(this.rowsBuffer);
 	var sql = builder.insertOrUpdate(this.table, rows);
 	this.connection.query(sql, function (e, result) {
-		self.emit('stored', e, result);
+		if (e) {
+			self.emit('error', e)
+			return;
+		}
+		self.emit('stored', result);
 		if (_.isFunction(callback))
 			callback(e, result);
 	});
