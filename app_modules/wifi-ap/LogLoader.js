@@ -80,7 +80,7 @@ LogLoader.prototype.parseLine = function (line, callback) {
 	var type = this.mapType(parts[3]);
 	var ap_code = typeof parts[8] !== 'undefined' ?parts[8].replace('.', '') :'';
 	var row = {
-		date_access: moment(parts[0]).format('YYYY-MM-DD hh:mm:ss'),
+		date_access: moment(parts[0]).format('YYYY-MM-DD HH:mm:ss'),
 		role: parts[1],
 		mac_hash: parts[2],
 		type: type,
@@ -120,7 +120,7 @@ LogLoader.prototype.storeRowsBuffer = function (callback) {
 		}
 		self.emit('stored', result);
 		if (_.isFunction(callback))
-			callback(e, result);
+			callback(null, result);
 	});
 };
 
