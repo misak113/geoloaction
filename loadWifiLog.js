@@ -2,9 +2,17 @@
 var LogLoader = require('./app_modules/wifi-ap/LogLoader');
 var mysql = require('mysql');
 var l = require('log-dispatch');
+var moment = require('moment');
 
 var dbname = 'geolocation';
 var tableName = 'ap_log';
+
+var dbConfig = {
+	host: 'localhost',
+	user: 'root',
+	password: '',
+	database: dbname
+};
 
 var loadLogFile = function (connection, callback) {
 	var logLoader = LogLoader(connection, tableName);
@@ -13,10 +21,11 @@ var loadLogFile = function (connection, callback) {
 
 	logLoader.loadFileToStorage(file, function () {
 		l.info('loaded');
-		callback(null, connection);
+		callback();
 	})
 	.on('stored', function (res) {
-		l.d('stored');
+		//l.d('stored');
+		process.stdout.write('.');
 	})
 	.on('error', function (e) {
 		l.error(e);
@@ -30,18 +39,17 @@ var closeConnection = function (e, connection) {
 	});
 };
 var start = function (e) {
-	var connection = mysql.createConnection({
-		host: 'localhost',
-		user: 'root',
-		password: '',
-		database: dbname
-	})
+	var startTime = moment().valueOf();
+	var connection = mysql.createConnection(dbConfig)
 	.on('error', function (e) {
 		l.error('Nepodařilo se připojit k databázi mysql', e);
 	});
 	connection.connect();
 
-	loadLogFile(connection, closeConnection);
+	loadLogFile(connection, function () {
+		closeConnection(null, connection);
+		l.info(moment.duration(moment().valueOf()-startTime).asSeconds()+" seconds");
+	});
 };
 
 start();
