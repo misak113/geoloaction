@@ -67,6 +67,11 @@ CREATE TABLE `ap` (
   CONSTRAINT `ap_ibfk_1` FOREIGN KEY (`lounge_id`) REFERENCES `lounge` (`lounge_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `ap`
+CHANGE `x_position` `x_position` float NOT NULL COMMENT 'relativní x pozice ap v hale (vyjádření v jednotkové stupnici)' AFTER `code`,
+CHANGE `y_position` `y_position` float NOT NULL COMMENT 'relativní y pozice ap v hale (vyjádření v jednotkové stupnici)' AFTER `x_position`,
+CHANGE `z_position` `z_position` float NULL COMMENT 'relativní z pozice ap v hale (vyjádření v jednotkové stupnici)' AFTER `y_position`,
+COMMENT=''; -- 0.501 s
 
 DROP TABLE IF EXISTS `compass_log`;
 CREATE TABLE `compass_log` (
@@ -201,6 +206,13 @@ CREATE TABLE `lounge` (
   CONSTRAINT `lounge_ibfk_1` FOREIGN KEY (`image_id`) REFERENCES `image` (`image_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `lounge`
+CHANGE `north_rotation` `heading` float NULL COMMENT 'natočení haly vůči severu v radiánech' AFTER `z_length`,
+COMMENT=''; -- 0.442 s
+
+ALTER TABLE `lounge`
+CHANGE `image_id` `image_id` int(11) NULL COMMENT 'obrázek půdorysu haly' AFTER `aspect_ratio`,
+COMMENT=''; -- 0.373 s
 
 DROP TABLE IF EXISTS `wifi_log`;
 CREATE TABLE `wifi_log` (
@@ -229,3 +241,34 @@ CREATE TABLE `wifi_log_ap` (
 
 
 -- 2014-01-27 00:20:54
+
+CREATE TABLE `connectivity_log` (
+  `connectivity_log_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `device_id` int(11) NOT NULL,
+  `type` varchar(50) NOT NULL,
+  `value` varchar(50) NOT NULL,
+  `date_recorded` date NOT NULL,
+  FOREIGN KEY (`device_id`) REFERENCES `device` (`device_id`)
+) COMMENT='' ENGINE='InnoDB'; -- 0.383 s
+
+
+-- Adminer 3.7.1 MySQL dump
+
+SET NAMES utf8;
+SET foreign_key_checks = 0;
+SET time_zone = '+01:00';
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
+
+DROP TABLE IF EXISTS `ap_boost`;
+CREATE TABLE `ap_boost` (
+  `ap_boost_id` int(11) NOT NULL AUTO_INCREMENT,
+  `ap_id` int(11) NOT NULL,
+  `heading` float NOT NULL COMMENT 'světová strana s upravenou sílou signálu',
+  `multiplier` float NOT NULL COMMENT 'násobitel síly signálu',
+  PRIMARY KEY (`ap_boost_id`),
+  KEY `ap_id` (`ap_id`),
+  CONSTRAINT `ap_boost_ibfk_1` FOREIGN KEY (`ap_id`) REFERENCES `ap` (`ap_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- 2014-01-30 21:47:52
