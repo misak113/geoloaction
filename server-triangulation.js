@@ -8,6 +8,8 @@ var triangulation = require('./app_modules/triangulation/index');
 var dbname = 'geolocation';
 var loungeTable = 'lounge';
 var apTable = 'ap';
+var wifiLogTable = 'wifi_log';
+var wifiLogApTable = 'wifi_log_ap';
 
 var dbConfig = {
 	host: 'localhost',
@@ -23,19 +25,28 @@ var connection = mysql.createConnection(dbConfig)
 connection.connect();
 
 var apDataLoader = triangulation.ApDataLoader(connection, loungeTable, apTable);
+var wifiLogLoader = triangulation.WifiLogLoader(connection, wifiLogTable, wifiLogApTable, apTable);
 
 var app = express();
 
 app.use(express.static(triangulation.publicPath));
 
-app.get('/load-data', function (req, res) {
+app.get('/load-lounges', function (req, res) {
 	apDataLoader.loadLounges(function (e, lounges) {
 		if (e) {
 			res.send({error: e});
 			return;
 		}
-		l.d(lounges);
 		res.send({lounges: lounges});
+	});
+});
+app.get('/load-wifi-logs', function (req, res) {
+	wifiLogLoader.loadLogs(function (e, logs) {
+		if (e) {
+			res.send({error: e});
+			return;
+		}
+		res.send({logs: logs});
 	});
 });
 
