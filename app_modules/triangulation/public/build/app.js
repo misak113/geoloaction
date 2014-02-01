@@ -1,7 +1,7 @@
 
 var app = angular.module('triangulation', []);
 
-function TriangulationCtrl($scope, $http, $timeout, Kinetic, apLayer, deviceLayer, circlesLayer) {
+function TriangulationCtrl($scope, $http, $timeout, Kinetic, loungeStage, apLayer, deviceLayer, circlesLayer, loungeLayer) {
 	var apSize = 10;
 	var deviceSize = 7;
 	$scope.lounge = {};
@@ -21,6 +21,7 @@ function TriangulationCtrl($scope, $http, $timeout, Kinetic, apLayer, deviceLaye
 	};
 
 	$scope.$watch('lounge', function () {
+		writeLounge($scope.lounge);
 		writeApList($scope.lounge.apList);
 	});
 
@@ -30,6 +31,21 @@ function TriangulationCtrl($scope, $http, $timeout, Kinetic, apLayer, deviceLaye
 		});
 		writeWifiLogs();
 		$timeout($scope.refreshWifiLog, 1000);
+	};
+
+	var writeLounge = function (lounge) {
+		loungeLayer.removeChildren();
+		var loungeRect = new Kinetic.Rect({
+			x: 0,
+			y: 0,
+			height: height,
+			width: width,
+			fill: '#EEE',
+			stroke: '#000',
+			strokeWidth: 3
+		});
+		loungeLayer.add(loungeRect);
+		loungeLayer.draw();
 	};
 
 	var writeApList = function (apList) {
@@ -124,26 +140,28 @@ app.factory('Kinetic', function () {
 	return service;
 });
 
-app.factory('loungeStage', function (Kinetic) {
-	return new Kinetic.Stage({
+app.factory('loungeStage', function (Kinetic, loungeLayer, circlesLayer, apLayer, deviceLayer) {
+	var stage = new Kinetic.Stage({
 		container: 'lounge',
 		width: 640,
 		height: 480
 	});
+	stage.add(loungeLayer);
+	stage.add(apLayer);
+	stage.add(deviceLayer);
+	stage.add(circlesLayer);
+	return stage;
 });
 
-app.factory('circlesLayer', function (Kinetic, loungeStage) {
-	var layer = new Kinetic.Layer();
-	loungeStage.add(layer);
-	return layer;
+app.factory('loungeLayer', function (Kinetic) {
+	return new Kinetic.Layer();
 });
-app.factory('apLayer', function (Kinetic, loungeStage) {
-	var layer = new Kinetic.Layer();
-	loungeStage.add(layer);
-	return layer;
+app.factory('circlesLayer', function (Kinetic) {
+	return new Kinetic.Layer();
 });
-app.factory('deviceLayer', function (Kinetic, loungeStage) {
-	var layer = new Kinetic.Layer();
-	loungeStage.add(layer);
-	return layer;
+app.factory('apLayer', function (Kinetic) {
+	return new Kinetic.Layer();
+});
+app.factory('deviceLayer', function (Kinetic) {
+	return new Kinetic.Layer();
 });
