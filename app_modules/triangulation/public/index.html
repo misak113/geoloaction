@@ -3,17 +3,15 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Triangulace</title>
-		<script src="build/angular.min.js" type="text/javascript"></script>
+		<script src="build/angular-1.2.10.min.js" type="text/javascript"></script>
+		<script src="build/kinetic-v5.0.1.min.js" type="text/javascript"></script>
 	</head>
-	<body ng-app>
-		<canvas id="lounge"
-				ng-controller="TriangulationCtrl"
-				ng-init="loadData()"
-				data-width="{{ lounge.x_length * 100 }}" data-height="{{ lounge.y_length * 100 }}"
-				width="640" height="480"
-				>
-			Musí být zapnuta podpora HTML5
-		</canvas>
+	<body ng-app="triangulation">
+		<div id="lounge"></div>
+		<div ng-controller="TriangulationCtrl"
+			ng-init="loadData(); refreshWifiLog()">
+			<input type="number" ng-model="multiplier" />
+		</div>
 
 		<script src="build/app.js" type="text/javascript"></script>
 	</body>

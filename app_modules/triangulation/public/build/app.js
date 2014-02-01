@@ -1,63 +1,85 @@
 
+var app = angular.module('triangulation', []);
 
-function TriangulationCtrl($scope, $http, $timeout) {
-	var loungeCanvas = document.getElementById("lounge").getContext('2d');
+function TriangulationCtrl($scope, $http, $timeout, Kinetic, apLayer, deviceLayer, circlesLayer) {
 	var apSize = 10;
 	var deviceSize = 7;
 	$scope.lounge = {};
 	$scope.wifiLogs = [];
-	var width = 640;//$scope.lounge.x_length * 100;
-	var height = 480;//$scope.lounge.y_length * 100;
+	$scope.multiplier = 50;
+	var width = 640;
+	var height = 480;
 
 	$scope.loadData = function () {
 		$http.get('load-lounges').success(function (data) {
 			// only first
-			$scope.lounge = data.lounges.pop();
+			var lounge = data.lounges.pop();
+			width = lounge.x_length * 100;
+			height = lounge.y_length * 100;
+			$scope.lounge = lounge;
 		});
-		refreshWifiLog();
 	};
 
-	$scope.$watch('lounge', function (lounge, loungeBefore) {
+	$scope.$watch('lounge', function () {
 		writeApList($scope.lounge.apList);
 	});
 
-	var refreshWifiLog = function () {
+	$scope.refreshWifiLog = function () {
 		$http.get('load-wifi-logs').success(function (data) {
 			$scope.wifiLogs = data.logs;
 		});
 		writeWifiLogs();
-		$timeout(refreshWifiLog, 1000);
+		$timeout($scope.refreshWifiLog, 1000);
 	};
 
 	var writeApList = function (apList) {
-		loungeCanvas.lineWidth = 2;
-		loungeCanvas.fillStyle = '#000'; // blue
-		loungeCanvas.strokeStyle = '#555'; // blue
+		apLayer.removeChildren();
 		angular.forEach(apList, function (ap) {
-			var x = width*ap.x_position-apSize/2;
-			var y = height*ap.y_position-apSize/2;
-			loungeCanvas.fillRect(x, y, apSize, apSize);
-			loungeCanvas.strokeRect(x, y, apSize, apSize);
+			var x = getXPosition(ap.x_position);
+			var y = getYPosition(ap.y_position);
+			var apCircle = new Kinetic.Circle({
+				x: x,
+				y: y,
+				height: apSize,
+				fill: '#000',
+				stroke: '#555',
+				strokeWidth: 2
+			});
+			apLayer.add(apCircle);
 		});
+		apLayer.draw();
+	};
+
+	var getXPosition = function (x_position) {
+		return width*x_position;
+	};
+
+	var getYPosition = function (y_position) {
+		return height*y_position;
 	};
 
 	var writeWifiLogs = function () {
 		angular.forEach($scope.wifiLogs, function (wifiLog) {
+			writeCircles(wifiLog.apList);
 			var devicePosition = calculatePosition(wifiLog.apList);
 			writeDevicePosition(devicePosition);
 		});
 	};
 
 	var writeDevicePosition = function (position) {
-		loungeCanvas.lineWidth = 2;
-		loungeCanvas.fillStyle = '#157'; // blue
-		loungeCanvas.strokeStyle = '#37A'; // blue
-
-		var x = width*position.x_position-deviceSize/2;
-		var y = height*position.y_position-deviceSize/2;
-		loungeCanvas.fillRect(x, y, deviceSize, deviceSize);
-		loungeCanvas.strokeRect(x, y, deviceSize, deviceSize);
-
+		deviceLayer.removeChildren();
+		var x = getXPosition(position.x_position);
+		var y = getYPosition(position.y_position);
+		var deviceCircle = new Kinetic.Circle({
+			x: x,
+			y: y,
+			radius: deviceSize,
+			fill: '#157',
+			stroke: '#37A',
+			strokeWidth: 2
+		});
+		deviceLayer.add(deviceCircle);
+		deviceLayer.draw();
 	};
 
 	var calculatePosition = function (logApList) {
@@ -67,4 +89,61 @@ function TriangulationCtrl($scope, $http, $timeout) {
 			y_position: 0.5
 		};
 	};
+
+
+	var writeCircles = function (logApList) {
+		circlesLayer.removeChildren();
+		angular.forEach(logApList, function (logAp) {
+			var size = (1/-logAp.signal_strength) * 100 * $scope.multiplier;
+			var circle = new Kinetic.Circle({
+				x: getXPosition(logAp.ap.x_position),
+				y: getYPosition(logAp.ap.y_position),
+				radius: size,
+				//fill: 'red',
+				stroke: 'black',
+				strokeWidth: 1
+			});
+			circlesLayer.add(circle);
+		});
+		circlesLayer.draw();
+	};
+
+	$scope.$watch('multiplier', function () {
+		if ($scope.multiplier < 0)
+			$scope.multiplier = 0;
+		writeWifiLogs();
+	});
 }
+
+
+
+app.factory('Kinetic', function () {
+	var service = Kinetic;
+	// delete from global context
+	delete Kinetic;
+	return service;
+});
+
+app.factory('loungeStage', function (Kinetic) {
+	return new Kinetic.Stage({
+		container: 'lounge',
+		width: 640,
+		height: 480
+	});
+});
+
+app.factory('circlesLayer', function (Kinetic, loungeStage) {
+	var layer = new Kinetic.Layer();
+	loungeStage.add(layer);
+	return layer;
+});
+app.factory('apLayer', function (Kinetic, loungeStage) {
+	var layer = new Kinetic.Layer();
+	loungeStage.add(layer);
+	return layer;
+});
+app.factory('deviceLayer', function (Kinetic, loungeStage) {
+	var layer = new Kinetic.Layer();
+	loungeStage.add(layer);
+	return layer;
+});
