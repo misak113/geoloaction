@@ -100,17 +100,53 @@ function TriangulationCtrl($scope, $http, $timeout, Kinetic, loungeStage, apLaye
 
 	var calculatePosition = function (logApList) {
 		// algoritmus triangulace
-		return {
-			x_position: 0.4,
-			y_position: 0.5
-		};
+		// zvolen algoritmus postupného počítání vzdáleností mezi body s délkou odpovídající signálu
+
+		// seřadíme dle síly signálu, první má největší signál
+		var logApListSorted = _.sortBy(logApList, function (logAp) {
+			return -logAp.signal_strength;
+		});
+
+		// vytvoříme body pro výpočet
+		var points = _.map(logApListSorted, function (logAp) {
+			return {
+				x_position: logAp.ap.x_position,
+				y_position: logAp.ap.y_position,
+				signal_strength: logAp.signal_strength
+			};
+		});
+
+		// první vezmene nejvyší bod a porovnáváme s druhým nejvyším
+		var c = points[0];
+		for (var i=1;i<points.length;i++) {
+			var a = c;
+			var b = points[i];
+			// síly signálu převedem na procenta (lineární vyjádření)
+			var signalA = decibelsToAbsolute(a.signal_strength);
+			var signalB = decibelsToAbsolute(b.signal_strength);
+			// získáme vektor od většího signálu k menšímu
+			var vectorAB = [b.x_position-a.x_position, b.y_position-a.y_position];
+			var signalMultiplier = signalB / (signalA + signalB);
+			var vectorAC = [vectorAB[0]*signalMultiplier, vectorAB[1]*signalMultiplier];
+			c = {
+				x_position: a.x_position+vectorAC[0],
+				y_position: a.y_position+vectorAC[1],
+				signal_strength: signalA+signalB
+			};
+		}
+		return c;
+	};
+
+	var decibelsToAbsolute = function (decibels) {
+		// přepočet na procenta, -95dBm=1%, -35dBm=100%
+		return (decibels+95)/60;
 	};
 
 
 	var writeCircles = function (logApList) {
 		circlesLayer.removeChildren();
 		angular.forEach(logApList, function (logAp) {
-			var size = (1/-logAp.signal_strength) * 100 * $scope.multiplier;
+			var size = 1/decibelsToAbsolute(logAp.signal_strength) * $scope.multiplier;
 			var circle = new Kinetic.Circle({
 				x: getXPosition(logAp.ap.x_position),
 				y: getYPosition(logAp.ap.y_position),
