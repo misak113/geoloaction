@@ -1,7 +1,7 @@
 {
   "name": "wifi-ap",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.1",
+  "description": "ERROR: No README data found!",
   "main": "LogLoader.js",
   "directories": {
     "test": "tests"
@@ -9,12 +9,26 @@
   "dependencies": {
     "mysql": "~2.0.1",
     "underscore": "~1.5.2",
-    "vows": "~0.7.0"
+    "xml2js": "~0.4.1",
+    "moment": "~2.5.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+	  "vows": "~0.7.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "misak113",
-  "license": "BSD"
+  "license": "BSD",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:misak113/geolocation.git"
+  },
+  "keywords": [
+    "wifi",
+    "ap"
+  ],
+  "bugs": {
+    "url": "https://github.com/misak113/geolocation/issues"
+  }
 }
