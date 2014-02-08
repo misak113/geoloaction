@@ -28,7 +28,7 @@ var LogLoader = function (query, table, builder) {
 	this.table = table;
 	this.builder = builder;
 	this.rowsBuffer = [];
-	this.maxBufferSize = 10000;
+	this.maxBufferSize = 20000;
 };
 LogLoader.prototype = Object.create(EventEmitter.prototype);
 LogLoader.prototype.TYPE_CONNECTED = 'connected';
@@ -113,7 +113,7 @@ LogLoader.prototype.storeRowsBuffer = function (callback) {
 	this.clearArray(this.rowsBuffer);
 	var sql = self.builder.insertOrUpdate(this.table, rows);
 	this.query(sql, function (e, result) {
-		if (e) {
+		if (e) {console.log(sql);
 			self.emit('error', e);
 			return;
 		}
