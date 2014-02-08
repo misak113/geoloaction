@@ -4,29 +4,29 @@ var fs = require('fs');
 var stream = require('stream');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('underscore');
-var builder = require('./mysql/builder');
 var moment = require('moment');
 
 
 
 /**
  * Factory
- * @param {Connection} connection MySQL connection
  * @return {LogLoader}
  */
-exports = module.exports = function (connection, table) {
-	return new LogLoader(connection, table);
+exports = module.exports = function (query, table, builder) {
+	return new LogLoader(query, table, builder);
 };
 
 /**
  * [LogLoader description]
  * @constructor
- * @param  {Connection} connection
+ * @param  {Function} query
  * @param  {string} table
+ * @param  {object} builder
  */
-var LogLoader = function (connection, table) {
-	this.connection = connection;
+var LogLoader = function (query, table, builder) {
+	this.query = query;
 	this.table = table;
+	this.builder = builder;
 	this.rowsBuffer = [];
 	this.maxBufferSize = 10000;
 };
@@ -73,7 +73,6 @@ LogLoader.prototype.loadFileToStorage = function (filePath, callback) {
  * [parseLines description]
  * @param  {string}   line
  * @param  {Function} callback
- * @return {[type]}
  */
 LogLoader.prototype.parseLine = function (line, callback) {
 	var parts = line.split(' ');
@@ -112,10 +111,10 @@ LogLoader.prototype.storeRowsBuffer = function (callback) {
 	var self = this;
 	var rows = this.cloneArray(this.rowsBuffer);
 	this.clearArray(this.rowsBuffer);
-	var sql = builder.insertOrUpdate(this.table, rows);
-	this.connection.query(sql, function (e, result) {
+	var sql = self.builder.insertOrUpdate(this.table, rows);
+	this.query(sql, function (e, result) {
 		if (e) {
-			self.emit('error', e)
+			self.emit('error', e);
 			return;
 		}
 		self.emit('stored', result);

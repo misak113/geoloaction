@@ -3,6 +3,7 @@ var LogLoader = require('./app_modules/wifi-ap/LogLoader');
 var mysql = require('mysql');
 var l = require('log-dispatch');
 var moment = require('moment');
+var builder = require('./app_modules/mysql/builder');
 
 var dbname = 'geolocation';
 var tableName = 'ap_log';
@@ -15,7 +16,7 @@ var dbConfig = {
 };
 
 var loadLogFile = function (connection, callback) {
-	var logLoader = LogLoader(connection, tableName);
+	var logLoader = LogLoader(function (sql, cb) { connection.query(sql, cb); }, tableName, builder);
 
 	var file = 'data/wlan-anon.txt';
 
@@ -24,7 +25,6 @@ var loadLogFile = function (connection, callback) {
 		callback();
 	})
 	.on('stored', function (res) {
-		//l.d('stored');
 		process.stdout.write('.');
 	})
 	.on('error', function (e) {
