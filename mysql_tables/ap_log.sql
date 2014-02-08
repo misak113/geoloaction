@@ -19,3 +19,12 @@ CREATE TABLE `ap_log` (
 
 
 -- 2014-01-25 15:09:42
+
+
+ALTER TABLE `ap_log`
+CHANGE `ap_code` `ap_code` varchar(50) COLLATE 'utf8_general_ci' NOT NULL COMMENT 'kód ap wifi routeru' AFTER `ap_log_id`,
+CHANGE `date_access` `date_access` datetime NOT NULL COMMENT 'datum pořízení logu' AFTER `ap_code`,
+CHANGE `role` `role` varchar(50) COLLATE 'utf8_general_ci' NOT NULL COMMENT 'Role ve které zařízení vystupuje. Zatím pouze Client' AFTER `date_access`,
+CHANGE `mac_hash` `mac_hash` varchar(50) COLLATE 'utf8_general_ci' NOT NULL COMMENT 'zahashovaná mac adresa zařízení' AFTER `role`,
+CHANGE `type` `type` varchar(50) COLLATE 'utf8_general_ci' NOT NULL COMMENT 'typ záznamu. připojen, odpojen z ap' AFTER `mac_hash`,
+COMMENT=''; -- 15.572 s
