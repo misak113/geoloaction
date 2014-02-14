@@ -4,7 +4,7 @@
 
 -- Dumped from database version 9.3.2
 -- Dumped by pg_dump version 9.3.2
--- Started on 2014-02-14 22:09:11
+-- Started on 2014-02-14 22:13:40
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12,25 +12,6 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
-
---
--- TOC entry 7 (class 2615 OID 2200)
--- Name: warehouse; Type: SCHEMA; Schema: -; Owner: postgres
---
-
-CREATE SCHEMA warehouse;
-
-
-ALTER SCHEMA warehouse OWNER TO postgres;
-
---
--- TOC entry 3292 (class 0 OID 0)
--- Dependencies: 7
--- Name: SCHEMA warehouse; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA warehouse IS 'standard public schema';
-
 
 SET search_path = warehouse, pg_catalog;
 
@@ -69,7 +50,7 @@ CREATE SEQUENCE availability_availability_id_seq
 ALTER TABLE warehouse.availability_availability_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3294 (class 0 OID 0)
+-- TOC entry 3255 (class 0 OID 0)
 -- Dependencies: 175
 -- Name: availability_availability_id_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -122,7 +103,7 @@ CREATE SEQUENCE customer_customer_id_seq
 ALTER TABLE warehouse.customer_customer_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3295 (class 0 OID 0)
+-- TOC entry 3256 (class 0 OID 0)
 -- Dependencies: 171
 -- Name: customer_customer_id_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -167,7 +148,7 @@ CREATE SEQUENCE position_position_id_seq
 ALTER TABLE warehouse.position_position_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3296 (class 0 OID 0)
+-- TOC entry 3257 (class 0 OID 0)
 -- Dependencies: 173
 -- Name: position_position_id_seq; Type: SEQUENCE OWNED BY; Schema: warehouse; Owner: postgres
 --
@@ -176,7 +157,7 @@ ALTER SEQUENCE position_position_id_seq OWNED BY "position".position_id;
 
 
 --
--- TOC entry 3160 (class 2604 OID 26186)
+-- TOC entry 3124 (class 2604 OID 26186)
 -- Name: availability_id; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -184,7 +165,7 @@ ALTER TABLE ONLY availability ALTER COLUMN availability_id SET DEFAULT nextval('
 
 
 --
--- TOC entry 3158 (class 2604 OID 26210)
+-- TOC entry 3122 (class 2604 OID 26210)
 -- Name: customer_id; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -192,7 +173,7 @@ ALTER TABLE ONLY customer ALTER COLUMN customer_id SET DEFAULT nextval('customer
 
 
 --
--- TOC entry 3159 (class 2604 OID 26214)
+-- TOC entry 3123 (class 2604 OID 26214)
 -- Name: position_id; Type: DEFAULT; Schema: warehouse; Owner: postgres
 --
 
@@ -200,7 +181,7 @@ ALTER TABLE ONLY "position" ALTER COLUMN position_id SET DEFAULT nextval('positi
 
 
 --
--- TOC entry 3167 (class 2606 OID 26185)
+-- TOC entry 3130 (class 2606 OID 26185)
 -- Name: availability_availability_id; Type: CONSTRAINT; Schema: warehouse; Owner: postgres; Tablespace: 
 --
 
@@ -209,7 +190,7 @@ ALTER TABLE ONLY availability
 
 
 --
--- TOC entry 3169 (class 2606 OID 16451)
+-- TOC entry 3132 (class 2606 OID 16451)
 -- Name: customer_contact_contact_customer_id_customer_id; Type: CONSTRAINT; Schema: warehouse; Owner: postgres; Tablespace: 
 --
 
@@ -218,7 +199,7 @@ ALTER TABLE ONLY customer_contact
 
 
 --
--- TOC entry 3163 (class 2606 OID 26189)
+-- TOC entry 3126 (class 2606 OID 26189)
 -- Name: customer_customer_id; Type: CONSTRAINT; Schema: warehouse; Owner: postgres; Tablespace: 
 --
 
@@ -227,7 +208,7 @@ ALTER TABLE ONLY customer
 
 
 --
--- TOC entry 3165 (class 2606 OID 26213)
+-- TOC entry 3128 (class 2606 OID 26213)
 -- Name: position_position_id; Type: CONSTRAINT; Schema: warehouse; Owner: postgres; Tablespace: 
 --
 
@@ -236,7 +217,7 @@ ALTER TABLE ONLY "position"
 
 
 --
--- TOC entry 3171 (class 2606 OID 26205)
+-- TOC entry 3134 (class 2606 OID 26205)
 -- Name: availability_customer_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -245,7 +226,7 @@ ALTER TABLE ONLY availability
 
 
 --
--- TOC entry 3173 (class 2606 OID 26195)
+-- TOC entry 3136 (class 2606 OID 26195)
 -- Name: customer_contact_contact_customer_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -254,7 +235,7 @@ ALTER TABLE ONLY customer_contact
 
 
 --
--- TOC entry 3172 (class 2606 OID 26190)
+-- TOC entry 3135 (class 2606 OID 26190)
 -- Name: customer_contact_customer_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -263,7 +244,7 @@ ALTER TABLE ONLY customer_contact
 
 
 --
--- TOC entry 3170 (class 2606 OID 26200)
+-- TOC entry 3133 (class 2606 OID 26200)
 -- Name: position_customer_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: postgres
 --
 
@@ -271,19 +252,7 @@ ALTER TABLE ONLY "position"
     ADD CONSTRAINT position_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES customer(customer_id);
 
 
---
--- TOC entry 3293 (class 0 OID 0)
--- Dependencies: 7
--- Name: warehouse; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE ALL ON SCHEMA warehouse FROM PUBLIC;
-REVOKE ALL ON SCHEMA warehouse FROM postgres;
-GRANT ALL ON SCHEMA warehouse TO postgres;
-GRANT ALL ON SCHEMA warehouse TO PUBLIC;
-
-
--- Completed on 2014-02-14 22:09:11
+-- Completed on 2014-02-14 22:13:41
 
 --
 -- PostgreSQL database dump complete
